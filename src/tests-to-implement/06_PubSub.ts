@@ -1,4 +1,3 @@
-import { randomInteger } from "../tests-implemented/helpers/random"
 
 type Callback = (...params: any[]) => any
 
@@ -27,7 +26,7 @@ export class PubSub {
     for (const callback of this.subscriptions[channel]) {
       setTimeout(() => {
         callback(payload)
-      }, randomInteger(100, 500))
+      }, Math.floor(Math.random() * 500 + 100))
     }
   }
 

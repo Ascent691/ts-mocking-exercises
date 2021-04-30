@@ -1,57 +1,102 @@
-import { generateDayMessage } from '../tests-to-implement/05_fake_timers'
+import { generateDayMessage } from "../tests-to-implement/05_fake_timers";
 
-describe('generateDayMessage', () => {
-  xit('returns a message containing the current time', () => {
-    // Arrange
-    // Act
-    // Assert
-  })
+describe("generateDayMessage", () => {
+  beforeEach(() => {
+    jasmine.clock().install();
+  });
 
-  xit('returns a message containing the current time after some time has elapsed', () => {
-    // Arrange
-    // Act
-    // Assert
-  })
+  afterEach(() => {
+    jasmine.clock().uninstall();
+  });
 
-  xit('returns a message containing "Monday" on Mondays', () => {
+  it("returns a message containing the current time", () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 30, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("2:29:00 PM");
+  });
 
-  xit('returns a message containing "Tuesday" on Tuesdays', () => {
+  it("returns a message containing the current time after some time has elapsed", () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 30, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
+    jasmine.clock().tick(1000);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("2:29:01 PM");
+  });
 
-  xit('returns a message containing "Wednesday" on Wednesdays', () => {
+  it('returns a message containing "Monday" on Mondays', () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 26, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("Monday");
+  });
 
-  xit('returns a message containing "Thursday" on Thursdays', () => {
+  it('returns a message containing "Tuesday" on Tuesdays', () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 27, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("Tuesday");
+  });
 
-  xit('returns a message containing "Friday" on Fridays', () => {
+  it('returns a message containing "Wednesday" on Wednesdays', () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 28, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("Wednesday");
+  });
 
-  xit('returns a message containing "Saturday" on Saturdays', () => {
+  it('returns a message containing "Thursday" on Thursdays', () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 29, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
+    expect(message).toContain("Thursday");
+  });
 
-  xit('returns a message containing "Sunday" on Sundays', () => {
+  it('returns a message containing "Friday" on Fridays', () => {
     // Arrange
+    const currentDate = new Date(2021, 3, 30, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
     // Act
+    const message = generateDayMessage();
     // Assert
-  })
-})
+    expect(message).toContain("Friday");
+  });
+
+  it('returns a message containing "Saturday" on Saturdays', () => {
+    // Arrange
+    const currentDate = new Date(2021, 3, 24, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
+    // Act
+    const message = generateDayMessage();
+    // Assert
+    expect(message).toContain("Saturday");
+  });
+
+  it('returns a message containing "Sunday" on Sundays', () => {
+    // Arrange
+    const currentDate = new Date(2021, 3, 25, 14, 29, 0, 0);
+    jasmine.clock().mockDate(currentDate);
+    // Act
+    const message = generateDayMessage();
+    // Assert
+    expect(message).toContain("Sunday");
+  });
+});
