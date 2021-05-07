@@ -23,7 +23,7 @@ export class PubSub {
   async publish(channel: string, payload: unknown) {
     console.log(`publishing ${JSON.stringify(payload)} on ${channel}`)
 
-    for (const callback of this.subscriptions[channel]) {
+    for (const callback of (this.subscriptions[channel] || [])) {
       setTimeout(() => {
         callback(payload)
       }, Math.floor(Math.random() * 500 + 100))
