@@ -82,8 +82,6 @@ describe("ItemProcessor", () => {
     describe("given newly added unprocessed items", () => {
       beforeEach(() => {
         jasmine.clock().install();
-        const currentDate = new Date(2021, 3, 30, 14, 29, 0, 0);
-        jasmine.clock().mockDate(currentDate);
       });
 
       afterEach(() => {
@@ -109,27 +107,68 @@ describe("ItemProcessor", () => {
           success();
         }).then(() => { });
         // Assert
-        expect(publishSpy).toHaveBeenCalledWith(PubSubChannels.itemUpdated, notYetProcessedItems[0]);
+        notYetProcessedItems.forEach(item => {
+          expect(publishSpy).toHaveBeenCalledWith(PubSubChannels.itemUpdated, item);
+        });
       });
     });
 
     describe("given multiple unprocessed items", () => {
-      xit("updates the cache with the item", async () => {
+      it("updates the cache with the item", async () => {
         // Arrange
+        const item1 = itemBuilder().build();
+        const item2 = itemBuilder().build();
+        const inMemoryCache = new InMemoryCache();
+        spyOn(inMemoryCache, "update");
+        const itemRepository = createItemRepositoryReturningValue(item1, item2);
+        const sut = createSut(inMemoryCache, itemRepository);
         // Act
+        await sut.processItems();
         // Assert
+        expect(inMemoryCache.update).toHaveBeenCalledWith(item1);
+        expect(inMemoryCache.update).toHaveBeenCalledWith(item2);
       });
 
-      xit("publishes an item updated message", async () => {
+      it("publishes an item updated message", async () => {
         // Arrange
+        const publishSpy = spyOnPubSubPublish();
+        const item1 = itemBuilder().build();
+        const item2 = itemBuilder().build();
+        const itemRepository = createItemRepositoryReturningValue(item1, item2);
+        const sut = createSut(new InMemoryCache(), itemRepository);
         // Act
+        await sut.processItems();
         // Assert
+        expect(publishSpy).toHaveBeenCalledWith(
+          PubSubChannels.itemUpdated,
+          item1
+        );
+        expect(publishSpy).toHaveBeenCalledWith(
+          PubSubChannels.itemUpdated,
+          item2
+        );
       });
 
-      xit("does not process items that have already been processed", async () => {
+      it("does not process items that have already been processed", async () => {
         // Arrange
+        const item1 = itemBuilder().build();
+        const item2 = itemBuilder().build();
+        const itemRepository = createItemRepositoryReturningValue(item1,item2);
+        const sut = createSut(new InMemoryCache(), itemRepository);
+        const publishSpy = spyOnPubSubPublish();
         // Act
+        await sut.processItems();
+        await sut.processItems();
         // Assert
+        expect(publishSpy).toHaveBeenCalledTimes(2)
+        expect(publishSpy).toHaveBeenCalledWith(
+          PubSubChannels.itemUpdated,
+          item1
+        );
+        expect(publishSpy).toHaveBeenCalledWith(
+          PubSubChannels.itemUpdated,
+          item2
+        );
       });
     });
   });
