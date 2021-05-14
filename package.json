@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npm run test-jest && npm run test-mocha && npm run test-jasmine",
     "test-jest": "jest",
+    "test-jest-watch": "jest --watch",
     "test-mocha": "ts-mocha src/**/*.test.ts --require mocha_setup.js",
     "test-jasmine": "ts-node --project ./tsconfig.json node_modules/jasmine/bin/jasmine --config=jasmine.json",
     "test-awesome": "nodemon --ext ts --exec ts-node --project ./tsconfig.json node_modules/jasmine/bin/jasmine --config=jasmine.json"
