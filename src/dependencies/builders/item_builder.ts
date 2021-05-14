@@ -8,7 +8,7 @@ export interface ItemBuilder {
 export function itemBuilder(): ItemBuilder {
   const item = {
     id: "abcdefg",
-    name: "Jack",
+    name: "Jack" + Math.random(),
     price: 0,
     description: "bob",
     created: new Date(),

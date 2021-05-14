@@ -26,11 +26,10 @@ describe("ItemProcessor", () => {
 
       const sut = createSut(new InMemoryCache(), itemRepository);
       // Act
-      const firstProcessCall = sut.processItems();
+      sut.processItems();
       spy();
       await sut.processItems();
       // Assert
-      await firstProcessCall;
       expect(itemRepository.getAll).toHaveBeenCalledTimes(1);
     });
 
@@ -40,7 +39,7 @@ describe("ItemProcessor", () => {
         const item = itemBuilder().build();
         const inMemoryCache = new InMemoryCache();
         spyOn(inMemoryCache, "update");
-        const itemRepository = createItemRepository(item);
+        const itemRepository = createItemRepositoryReturningValue(item);
         const sut = createSut(inMemoryCache, itemRepository);
         // Act
         await sut.processItems();
@@ -50,37 +49,67 @@ describe("ItemProcessor", () => {
 
       it("publishes an item updated message", async () => {
         // Arrange
-        const spy = jasmine.createSpy();
-
-        const myPromise = new Promise<Item>((success, reject) => {
-          spy.and.callFake((receivedItem) => {
-            success(receivedItem);
-          });
-        });
-
-        PubSub.getInstance().subscribe(PubSubChannels.itemUpdated, spy);
+        const publishSpy = spyOnPubSubPublish();
         const item = itemBuilder().build();
-        const itemRepository = createItemRepository(item);
+        const itemRepository = createItemRepositoryReturningValue(item);
         const sut = createSut(new InMemoryCache(), itemRepository);
         // Act
         await sut.processItems();
-        const actualItem = await myPromise;
         // Assert
-        expect(actualItem).toEqual(item);
+        expect(publishSpy).toHaveBeenCalledWith(
+          PubSubChannels.itemUpdated,
+          item
+        );
       });
 
-      xit("does not process items that have already been processed", async () => {
+      it("does not process items that have already been processed", async () => {
         // Arrange
+        const item = itemBuilder().build();
+        const itemRepository = createItemRepositoryReturningValue(item);
+        const sut = createSut(new InMemoryCache(), itemRepository);
+        const publishSpy = spyOnPubSubPublish();
         // Act
+        await sut.processItems();
+        await sut.processItems();
         // Assert
+        expect(publishSpy).toHaveBeenCalledOnceWith(
+          PubSubChannels.itemUpdated,
+          item
+        );
       });
     });
 
     describe("given newly added unprocessed items", () => {
-      xit("processes all newly added items every x seconds", async () => {
+      beforeEach(() => {
+        jasmine.clock().install();
+        const currentDate = new Date(2021, 3, 30, 14, 29, 0, 0);
+        jasmine.clock().mockDate(currentDate);
+      });
+
+      afterEach(() => {
+        jasmine.clock().uninstall();
+      });
+
+      it("processes all newly added items every 5 seconds", async () => {
         // Arrange
+        const publishSpy = spyOnPubSubPublish();
+        const alreadyProcessedItems = createRandomItems();
+        const notYetProcessedItems = createRandomItems();
+        const itemsToBeProcessed =
+          alreadyProcessedItems.concat(notYetProcessedItems);
+        const itemRepository = createItemRepositoryReturningValues(
+          alreadyProcessedItems,
+          itemsToBeProcessed
+        );
+        const sut = createSut(new InMemoryCache(), itemRepository);
         // Act
+        await sut.processItems();
+        jasmine.clock().tick(5001);
+        await new Promise<void>((success, reject) => {
+          success();
+        }).then(() => { });
         // Assert
+        expect(publishSpy).toHaveBeenCalledWith(PubSubChannels.itemUpdated, notYetProcessedItems[0]);
       });
     });
 
@@ -105,12 +134,34 @@ describe("ItemProcessor", () => {
     });
   });
 
-  function createItemRepository(...params: Item[]): ItemRepository {
+  function spyOnPubSubPublish() {
+    const instance = PubSub.getInstance();
+    spyOn(instance, "publish");
+    return instance.publish;
+  }
+
+  function createItemRepositoryReturningValue(
+    ...params: Item[]
+  ): ItemRepository {
     const result = new ItemRepository();
     if (!!params) {
       spyOn(result, "getAll").and.returnValue(params);
     }
     return result;
+  }
+
+  function createItemRepositoryReturningValues(
+    ...params: Item[][]
+  ): ItemRepository {
+    const result = new ItemRepository();
+    if (!!params) {
+      spyOn(result, "getAll").and.returnValues(...params);
+    }
+    return result;
+  }
+
+  function createRandomItems() {
+    return [5,5,5,5,5].map((thing) => itemBuilder().build());
   }
 
   function createSut(
