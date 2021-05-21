@@ -21,7 +21,7 @@ export class PubSub {
   }
 
   async publish(channel: string, payload: unknown) {
-    console.log(`publishing ${JSON.stringify(payload)} on ${channel}`)
+    // console.log(`publishing ${JSON.stringify(payload)} on ${channel}`)
 
     for (const callback of (this.subscriptions[channel] || [])) {
       setTimeout(() => {
@@ -31,7 +31,7 @@ export class PubSub {
   }
 
   async subscribe(channel: string, callback: Callback) {
-    console.log(`subscribing to ${channel}`)
+    // console.log(`subscribing to ${channel}`)
 
     this.subscriptions[channel] = [
       ...(this.subscriptions[channel] || []),
